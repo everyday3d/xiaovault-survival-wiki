@@ -61,3 +61,12 @@ This model is engineered for **100% Zero-Support FDM Printing**. Both parts are 
 3. **Route Harness:** Dress the 6 wires through the central divider channel ($10.0\text{ mm} \times 2.4\text{ mm}$).
 4. **Close Lid:** Align the Lid with the Base (USB notch forward, SD slot rearward, lanyard tab matching). Press the lid firmly until all 8 detents click into place.
 5. **Insert MicroSD:** Push your formatted MicroSD card into the rear ejection slot until it clicks into the push-push socket. To remove, simply push in slightly until it springs back out.
+
+---
+
+## 🛠️ User Customization & CAD Remixing
+
+We believe in true open hardware! To make it as easy as possible for the community to customize and adapt this design:
+
+* **Universal STEP Models (`.step`)**: Neutral, non-faceted B-Rep solids are provided for the Base, Lid, and Full Assembly. Import these directly into Fusion 360, SolidWorks, Onshape, Rhino, Blender, or Bambu Studio for clean boolean operations and custom modifications without messy triangulated STL meshes.
+* **Parametric FreeCAD 1.1 Project (`XiaoVault_Tandem_Case.FCStd`)**: Open source parametric CAD project. Edit sketches, adjust cavity dimensions for different third-party breakout boards, change wall thicknesses, or add external belt clips and MOLLE webbing mounts!

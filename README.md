@@ -24,6 +24,7 @@ This repository includes the complete 3D printable **XiaoVault C6 Tandem Edition
 - **8-Point Positive Click-Lock Detents**: 4 cantilever detents per side ensure a tight, rattle-free seal that will never loosen in a backpack or pocket.
 - **100% Zero-Support FDM Printability**: Pre-oriented flat on print bed with 0 downward-facing steep overhangs.
 - **Integrated 4.0 mm Paracord / Keyring Loop**: Heavy-duty lanyard loop on the rear corner.
+- **Open CAD for Customization (STEP & FreeCAD)**: Includes universal STEP solids (`.step`) and the master parametric FreeCAD project (`.FCStd`) so you can easily remix, adapt dimensions to other breakout modules, or add custom mounting tabs.
 
 ---
 
