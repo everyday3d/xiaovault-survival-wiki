@@ -11,13 +11,19 @@ When cellular towers, power grids, and internet access go down during emergencie
 
 ---
 
-## 📸 3D Printable Snap-Fit Case (XiaoVault C6)
+## 📸 3D Printable Snap-Fit Case (XiaoVault C6 Tandem Edition)
 
-This repository includes the complete 3D printable **XiaoVault C6** zero-support snap-fit enclosure files in [`models/`](models/):
+This repository includes the complete 3D printable **XiaoVault C6 Tandem Edition** zero-support snap-fit enclosure files in [`models/`](models/):
 
-![XiaoVault C6 Exploded Assembly](docs/xiao_case_exploded_view.png)
+![XiaoVault C6 Tandem Exploded Assembly](docs/images/exploded_view.png)
 
----
+### Key Enclosure Features:
+- **End-to-End Tandem Architecture**: Houses both the Seeed Studio XIAO ESP32-C6 and a standard 6-pin MicroSD SPI Breakout board while maintaining an ultra-slim 9.4 mm pocket profile (21.0 mm W × 44.5 mm L × 9.4 mm H).
+- **Rear Push-Push MicroSD Ejection Slot**: Swap or update survival databases on your MicroSD card on the fly through the dedicated rear slot without opening the case.
+- **Front Split U-Notch USB-C Port**: Plug in any standard USB cable or portable phone charger power bank with zero cable strain.
+- **8-Point Positive Click-Lock Detents**: 4 cantilever detents per side ensure a tight, rattle-free seal that will never loosen in a backpack or pocket.
+- **100% Zero-Support FDM Printability**: Pre-oriented flat on print bed with 0 downward-facing steep overhangs.
+- **Integrated 4.0 mm Paracord / Keyring Loop**: Heavy-duty lanyard loop on the rear corner.
 
 ## 🌟 Key Features
 
