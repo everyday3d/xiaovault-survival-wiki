@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>XiaoVault Survival Wiki — UI</title>
+<style>
+:root {
+  --bg: #0d1117;
+  --card: #161b22;
+  --border: #30363d;
+  --text: #c9d1d9;
+  --text-bright: #f0f6fc;
+  --accent: #f0883e;
+  --accent-hover: #fa9a52;
+  --danger: #f85149;
+  --success: #3fb950;
+  --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font);
+  line-height: 1.5;
+  padding-bottom: 24px;
+  -webkit-font-smoothing: antialiased;
+}
+header {
+  background: var(--card);
+  border-bottom: 1px solid var(--border);
+  padding: 14px 18px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 700;
+  color: var(--text-bright);
+  font-size: 1.1rem;
+  text-decoration: none;
+}
+.brand .badge {
+  background: var(--accent);
+  color: #0d1117;
+  font-size: 0.65rem;
+  font-weight: 800;
+  padding: 3px 7px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+}
+.status-pill {
+  font-size: 0.78rem;
+  color: #8b949e;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #0d1117;
+  padding: 4px 10px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+}
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--success);
+  display: inline-block;
+  box-shadow: 0 0 8px rgba(63, 185, 80, 0.6);
+}
+.container {
+  max-width: 460px;
+  margin: 0 auto;
+  padding: 16px;
+}
+.search-box {
+  margin: 12px 0 18px 0;
+  position: relative;
+}
+.search-input {
+  width: 100%;
+  padding: 14px 16px 14px 44px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--text-bright);
+  font-size: 0.95rem;
+  outline: none;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+}
+.search-icon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #8b949e;
+  font-size: 1.1rem;
+}
+.categories {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-bottom: 20px;
+}
+.cat-btn {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px 8px;
+  text-align: center;
+  color: var(--text-bright);
+  font-size: 0.8rem;
+  font-weight: 600;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.15s ease;
+}
+.cat-btn.active {
+  border-color: var(--accent);
+  background: #1f242c;
+}
+.cat-icon { font-size: 1.35rem; }
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px;
+  margin-bottom: 16px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+.card h2 {
+  color: var(--text-bright);
+  font-size: 1.05rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.card-count {
+  font-size: 0.72rem;
+  background: #21262d;
+  color: var(--accent);
+  padding: 2px 7px;
+  border-radius: 10px;
+  font-weight: 700;
+}
+.guide-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 0;
+  border-bottom: 1px solid #21262d;
+  color: var(--text-bright);
+  text-decoration: none;
+  font-size: 0.92rem;
+}
+.guide-item:last-child { border-bottom: none; padding-bottom: 4px; }
+.guide-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.guide-tag {
+  font-size: 0.72rem;
+  color: #8b949e;
+  background: #0d1117;
+  padding: 2px 6px;
+  border-radius: 4px;
+  border: 1px solid #30363d;
+}
+.arrow { color: #8b949e; font-size: 0.85rem; }
+
+.sys-info {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  text-align: center;
+  font-size: 0.72rem;
+  color: #8b949e;
+  margin-top: 18px;
+  padding: 14px 10px;
+  background: var(--card);
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+.sys-val { font-weight: 700; color: var(--text-bright); font-size: 0.9rem; margin-bottom: 2px; }
+
+.wiki-banner {
+  background: linear-gradient(135deg, #1c2633 0%, #161b22 100%);
+  border: 1px solid rgba(240, 136, 62, 0.3);
+  border-radius: 8px;
+  padding: 12px 14px;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.wiki-banner-text {
+  font-size: 0.82rem;
+  color: var(--text);
+}
+.wiki-banner-text strong {
+  color: var(--accent);
+  display: block;
+  font-size: 0.9rem;
+  margin-bottom: 2px;
+}
+.wiki-speed {
+  font-size: 0.7rem;
+  background: rgba(63, 185, 80, 0.15);
+  color: var(--success);
+  border: 1px solid rgba(63, 185, 80, 0.4);
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+</style>
+</head>
+<body>
+
+<header>
+  <a href="#" class="brand">
+    <span>⚡ XiaoVault</span>
+    <span class="badge">OFFLINE</span>
+  </a>
+  <div class="status-pill">
+    <span class="dot"></span>
+    <span>WiFi Active • SD Online</span>
+  </div>
+</header>
+
+<div class="container">
+  <div class="search-box">
+    <span class="search-icon">🔍</span>
+    <input type="text" class="search-input" value="water purification" placeholder="Search offline Wikipedia & guides...">
+  </div>
+
+  <div class="categories">
+    <div class="cat-btn">
+      <span class="cat-icon">🩺</span>
+      <span>First Aid</span>
+    </div>
+    <div class="cat-btn active">
+      <span class="cat-icon">💧</span>
+      <span>Water</span>
+    </div>
+    <div class="cat-btn">
+      <span class="cat-icon">🏕️</span>
+      <span>Shelter</span>
+    </div>
+    <div class="cat-btn">
+      <span class="cat-icon">📡</span>
+      <span>Morse / Radio</span>
+    </div>
+    <div class="cat-btn">
+      <span class="cat-icon">🌿</span>
+      <span>Edibles</span>
+    </div>
+    <div class="cat-btn">
+      <span class="cat-icon">📚</span>
+      <span>Wikipedia</span>
+    </div>
+  </div>
+
+  <div class="wiki-banner">
+    <div class="wiki-banner-text">
+      <strong>Offline Survival Wikipedia</strong>
+      <span>142,850 Articles • Zero Internet Required</span>
+    </div>
+    <div class="wiki-speed">&lt;15ms Search</div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <h2>💧 Emergency Hydration & Water Guides</h2>
+      <span class="card-count">4 Results</span>
+    </div>
+    <div class="guide-item">
+      <div class="guide-left">
+        <span>💧</span>
+        <div>
+          <div>Emergency Water Purification (Boiling & Bleach)</div>
+          <span class="guide-tag">Flash Guide</span>
+        </div>
+      </div>
+      <span class="arrow">→</span>
+    </div>
+    <div class="guide-item">
+      <div class="guide-left">
+        <span>🧪</span>
+        <div>
+          <div>Improvised Sand & Charcoal Biofilter</div>
+          <span class="guide-tag">MicroSD #0412</span>
+        </div>
+      </div>
+      <span class="arrow">→</span>
+    </div>
+    <div class="guide-item">
+      <div class="guide-left">
+        <span>☀️</span>
+        <div>
+          <div>Solar Water Still (Desert Survival Extraction)</div>
+          <span class="guide-tag">MicroSD #0891</span>
+        </div>
+      </div>
+      <span class="arrow">→</span>
+    </div>
+    <div class="guide-item">
+      <div class="guide-left">
+        <span>🌿</span>
+        <div>
+          <div>Vegetation Transpiration Bagging Techniques</div>
+          <span class="guide-tag">MicroSD #1105</span>
+        </div>
+      </div>
+      <span class="arrow">→</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <h2>🚨 Emergency Fast Triage (Flash ROM)</h2>
+      <span class="card-count">Always Ready</span>
+    </div>
+    <div class="guide-item">
+      <div class="guide-left">
+        <span>🫀</span>
+        <div>Adult CPR & Rescue Breaths</div>
+      </div>
+      <span class="arrow">→</span>
+    </div>
+    <div class="guide-item">
+      <div class="guide-left">
+        <span>🩸</span>
+        <div>Severe Bleeding & Tourniquet Application</div>
+      </div>
+      <span class="arrow">→</span>
+    </div>
+    <div class="guide-item">
+      <div class="guide-left">
+        <span>🏕️</span>
+        <div>Rule of Threes & Hypothermia Prevention</div>
+      </div>
+      <span class="arrow">→</span>
+    </div>
+  </div>
+
+  <div class="sys-info">
+    <div>
+      <div class="sys-val">5.08 V</div>
+      <div>USB-C Power</div>
+    </div>
+    <div>
+      <div class="sys-val">32 GB</div>
+      <div>MicroSD FAT32</div>
+    </div>
+    <div>
+      <div class="sys-val">2</div>
+      <div>Active Phones</div>
+    </div>
+    <div>
+      <div class="sys-val">18h 42m</div>
+      <div>Uptime</div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
