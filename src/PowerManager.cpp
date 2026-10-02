@@ -94,7 +94,11 @@ void PowerManager::enterDeepSleep() {
     digitalWrite(STATUS_LED_PIN, LOW); // LED OFF
 
     // Configure wakeup on button press
+#if defined(BOARD_XIAO_ESP32C6)
     esp_deep_sleep_enable_gpio_wakeup(1ULL << USER_BTN_PIN, ESP_GPIO_WAKEUP_GPIO_LOW);
+#else
+    esp_sleep_enable_ext0_wakeup((gpio_num_t)USER_BTN_PIN, 0);
+#endif
 
     Serial.println(F("[POWER] Press button to wake. Nighty night!"));
     Serial.flush();
