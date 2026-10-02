@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>XiaoVault Survival Wiki — 1-Click Web Flasher</title>
+<meta name="description" content="Flash the XiaoVault Survival Wiki firmware directly to your Seeed Studio XIAO ESP32-C6 from your web browser in under 30 seconds.">
+<!-- ESP Web Tools component -->
+<script type="module" src="https://unpkg.com/esp-web-tools@10/dist/web/install-button.js?module"></script>
+<style>
+:root {
+  --bg: #0d1117;
+  --card: #161b22;
+  --border: #30363d;
+  --text: #c9d1d9;
+  --text-bright: #f0f6fc;
+  --accent: #f0883e;
+  --accent-hover: #fa9a52;
+  --success: #3fb950;
+  --danger: #f85149;
+  --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font);
+  line-height: 1.6;
+  padding: 0 0 60px 0;
+  -webkit-font-smoothing: antialiased;
+}
+header {
+  background: var(--card);
+  border-bottom: 1px solid var(--border);
+  padding: 18px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-weight: 700;
+  color: var(--text-bright);
+  font-size: 1.25rem;
+  text-decoration: none;
+}
+.brand .badge {
+  background: var(--accent);
+  color: #0d1117;
+  font-size: 0.7rem;
+  font-weight: 800;
+  padding: 3px 8px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+}
+.github-link {
+  color: var(--text);
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: #0d1117;
+  transition: all 0.2s;
+}
+.github-link:hover {
+  color: var(--text-bright);
+  border-color: var(--text);
+}
+.hero {
+  max-width: 820px;
+  margin: 40px auto 30px auto;
+  padding: 0 20px;
+  text-align: center;
+}
+.hero h1 {
+  font-size: 2.3rem;
+  color: var(--text-bright);
+  margin-bottom: 12px;
+  font-weight: 800;
+}
+.hero h1 span { color: var(--accent); }
+.hero p {
+  font-size: 1.15rem;
+  color: #8b949e;
+  max-width: 680px;
+  margin: 0 auto;
+}
+.compat-banner {
+  max-width: 780px;
+  margin: 20px auto 30px auto;
+  padding: 12px 18px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-align: left;
+}
+.compat-supported {
+  background: rgba(63, 185, 80, 0.12);
+  border: 1px solid rgba(63, 185, 80, 0.4);
+  color: #7ee787;
+}
+.compat-unsupported {
+  background: rgba(248, 81, 73, 0.12);
+  border: 1px solid rgba(248, 81, 73, 0.4);
+  color: #fca8a4;
+  display: none;
+}
+.container {
+  max-width: 780px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+.flasher-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 32px 28px;
+  margin-bottom: 30px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+  text-align: center;
+}
+.steps-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  margin-bottom: 32px;
+  text-align: left;
+}
+@media (max-width: 640px) {
+  .steps-grid { grid-template-columns: 1fr; gap: 16px; }
+  .hero h1 { font-size: 1.8rem; }
+}
+.step {
+  background: #0d1117;
+  border: 1px solid #21262d;
+  border-radius: 8px;
+  padding: 18px 16px;
+}
+.step-num {
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 6px;
+}
+.step h3 {
+  color: var(--text-bright);
+  font-size: 1.05rem;
+  margin-bottom: 6px;
+}
+.step p {
+  font-size: 0.85rem;
+  color: #8b949e;
+  line-height: 1.45;
+}
+.flash-action-area {
+  padding: 24px 0 10px 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+/* Style ESP Web Tools button */
+esp-web-install-button {
+  --esp-tools-button-border-radius: 8px;
+  --esp-tools-button-color: #0d1117;
+  --esp-tools-button-background-color: var(--accent);
+  --esp-tools-button-padding: 14px 28px;
+  --esp-tools-button-font-size: 1.1rem;
+  --esp-tools-button-font-weight: 700;
+}
+.btn-custom-install {
+  background: var(--accent);
+  color: #0d1117;
+  font-size: 1.15rem;
+  font-weight: 800;
+  padding: 16px 36px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  box-shadow: 0 4px 16px rgba(240, 136, 62, 0.35);
+  transition: all 0.2s;
+}
+.btn-custom-install:hover {
+  background: var(--accent-hover);
+  transform: translateY(-1px);
+}
+.flash-note {
+  font-size: 0.85rem;
+  color: #8b949e;
+}
+.info-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 24px;
+}
+.info-card h2 {
+  color: var(--text-bright);
+  font-size: 1.25rem;
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.pin-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+  margin-top: 10px;
+}
+.pin-table th, .pin-table td {
+  padding: 10px 14px;
+  text-align: left;
+  border-bottom: 1px solid #21262d;
+}
+.pin-table th {
+  color: var(--accent);
+  font-weight: 700;
+  background: #0d1117;
+}
+.pin-table tr:last-child td { border-bottom: none; }
+.badge-pin {
+  font-family: monospace;
+  background: #0d1117;
+  border: 1px solid var(--border);
+  padding: 2px 6px;
+  border-radius: 4px;
+  color: var(--text-bright);
+}
+.callout {
+  background: #0d1117;
+  border-left: 4px solid var(--accent);
+  padding: 14px 16px;
+  border-radius: 0 6px 6px 0;
+  margin: 16px 0;
+  font-size: 0.9rem;
+}
+.callout strong { color: var(--text-bright); }
+footer {
+  text-align: center;
+  font-size: 0.85rem;
+  color: #8b949e;
+  margin-top: 40px;
+}
+footer a { color: var(--accent); text-decoration: none; }
+</style>
+</head>
+<body>
+
+<header>
+  <a href="https://github.com/everyday3d/xiaovault-survival-wiki" class="brand">
+    <span>⚡ XiaoVault</span>
+    <span class="badge">Web Flasher</span>
+  </a>
+  <a href="https://github.com/everyday3d/xiaovault-survival-wiki" target="_blank" rel="noopener" class="github-link">
+    <span>⭐ GitHub Repository</span>
+  </a>
+</header>
+
+<div class="hero">
+  <h1>Flash XiaoVault <span>in 30 Seconds</span></h1>
+  <p>Install the complete offline survival Wikipedia & emergency library directly from your web browser. Zero software, drivers, or terminal setup required.</p>
+</div>
+
+<div class="container">
+  <div id="compatBanner" class="compat-banner compat-supported">
+    <span>🟢</span>
+    <div>
+      <strong>Browser Ready:</strong> Web Serial API detected. Compatible with Google Chrome, Microsoft Edge, Opera, and Brave on Windows, macOS, Linux, and ChromeOS.
+    </div>
+  </div>
+
+  <div id="compatError" class="compat-banner compat-unsupported">
+    <span>⚠️</span>
+    <div>
+      <strong>Unsupported Browser:</strong> Web Serial is not supported on this browser (or on iOS/Android mobile browsers). Please open this page on a computer using <strong>Google Chrome</strong> or <strong>Microsoft Edge</strong>.
+    </div>
+  </div>
+
+  <div class="flasher-card">
+    <div class="steps-grid">
+      <div class="step">
+        <div class="step-num">Step 1</div>
+        <h3>Connect USB-C</h3>
+        <p>Plug your <strong>Seeed Studio XIAO ESP32-C6</strong> into your computer using a standard USB-C data cable.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">Step 2</div>
+        <h3>Click Flash</h3>
+        <p>Click the button below and pick your Xiao COM port from the browser prompt to install.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">Step 3</div>
+        <h3>Insert SD & Power</h3>
+        <p>Insert your MicroSD card and plug into any portable phone charger power bank!</p>
+      </div>
+    </div>
+
+    <div class="flash-action-area">
+      <!-- Official ESP Web Tools Install Button -->
+      <esp-web-install-button manifest="manifest.json">
+        <button slot="activate" class="btn-custom-install">
+          ⚡ Connect & Flash XiaoVault
+        </button>
+        <span slot="unsupported">
+          Web Serial is not supported on this browser. Use Google Chrome or Microsoft Edge on a desktop computer.
+        </span>
+        <span slot="not-allowed">
+          Web Serial is only allowed over HTTPS or localhost.
+        </span>
+      </esp-web-install-button>
+
+      <p class="flash-note">
+        💡 <em>Flashing takes ~25 seconds. The firmware, bootloader, and partition table will be installed and verified automatically.</em>
+      </p>
+    </div>
+  </div>
+
+  <div class="info-card">
+    <h2>🔌 Hardware Wiring (XIAO to MicroSD Breakout)</h2>
+    <p>Wire the 6 pins between your Seeed Studio XIAO ESP32-C6 and standard SPI MicroSD card module:</p>
+    <table class="pin-table">
+      <thead>
+        <tr>
+          <th>MicroSD Pin</th>
+          <th>XIAO ESP32-C6 Pin</th>
+          <th>Function</th>
+          <th>Wire Color (Typical)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="badge-pin">VCC</span></td>
+          <td><span class="badge-pin">3V3</span></td>
+          <td>3.3V Power</td>
+          <td>Red</td>
+        </tr>
+        <tr>
+          <td><span class="badge-pin">GND</span></td>
+          <td><span class="badge-pin">GND</span></td>
+          <td>Ground</td>
+          <td>Black</td>
+        </tr>
+        <tr>
+          <td><span class="badge-pin">SCK</span> / CLK</td>
+          <td><span class="badge-pin">D8</span> (GPIO 19)</td>
+          <td>SPI Clock</td>
+          <td>Yellow</td>
+        </tr>
+        <tr>
+          <td><span class="badge-pin">MISO</span></td>
+          <td><span class="badge-pin">D9</span> (GPIO 20)</td>
+          <td>SPI Master In / Slave Out</td>
+          <td>Green</td>
+        </tr>
+        <tr>
+          <td><span class="badge-pin">MOSI</span></td>
+          <td><span class="badge-pin">D10</span> (GPIO 18)</td>
+          <td>SPI Master Out / Slave In</td>
+          <td>Blue</td>
+        </tr>
+        <tr>
+          <td><span class="badge-pin">CS</span></td>
+          <td><span class="badge-pin">D2</span> (GPIO 2)</td>
+          <td>SPI Chip Select</td>
+          <td>White</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="callout">
+      <strong>Pro Tip:</strong> If your Xiao COM port doesn't appear in the browser list, hold down the tiny physical <strong>BOOT</strong> button on the Xiao while plugging the USB-C cable into your computer. This forces the ESP32-C6 into native ROM bootloader mode.
+    </div>
+  </div>
+
+  <div class="info-card">
+    <h2>🧊 3D-Printable Snap-Fit Enclosure</h2>
+    <p>Download the 100% support-free <strong>XiaoVault C6 Tandem Edition</strong> snap-fit enclosure files from our repository:</p>
+    <ul style="margin: 12px 0 12px 24px; font-size: 0.92rem;">
+      <li><code>1_XiaoVault_Tandem_Base_rev1.stl</code> — Lower shell with internal wire divider and rear SD slot.</li>
+      <li><code>2_XiaoVault_Tandem_Lid_rev1.stl</code> — Upper snap-fit lid with GPIO and cooling slots.</li>
+      <li>Full parametric STEP files (`.step`) and FreeCAD project (`.FCStd`) included for custom remixing.</li>
+    </ul>
+    <p><a href="https://github.com/everyday3d/xiaovault-survival-wiki/tree/main/models" target="_blank" rel="noopener" style="color:var(--accent); font-weight:700;">➔ View 3D CAD Files in Repository</a></p>
+  </div>
+</div>
+
+<footer>
+  <p>XiaoVault Survival Wiki • Open Source (MIT) • Powered by <a href="https://github.com/everyday3d/boxerrdawg3d" target="_blank" rel="noopener">BoxerDawg 3D</a></p>
+</footer>
+
+<script>
+// Check Web Serial API support
+if (!('serial' in navigator)) {
+  document.getElementById('compatBanner').style.display = 'none';
+  document.getElementById('compatError').style.display = 'flex';
+}
+</script>
+
+</body>
+</html>

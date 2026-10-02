@@ -1,0 +1,26 @@
+{
+  "name": "XiaoVault Survival Wiki",
+  "version": "1.0.0",
+  "home_assistant_domain": "xiaovault",
+  "new_install_prompt_erase": true,
+  "builds": [
+    {
+      "chipFamily": "ESP32-C6",
+      "parts": [
+        {
+          "path": "firmware/xiaovault_c6_merged.bin",
+          "offset": 0
+        }
+      ]
+    },
+    {
+      "chipFamily": "ESP32-S3",
+      "parts": [
+        {
+          "path": "firmware/xiaovault_s3_merged.bin",
+          "offset": 0
+        }
+      ]
+    }
+  ]
+}

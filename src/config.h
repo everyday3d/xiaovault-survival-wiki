@@ -15,10 +15,10 @@
 #if defined(BOARD_XIAO_ESP32C6)
     // Seeed Studio XIAO ESP32-C6 Standard Pinout
     // SPI Bus for MicroSD Card Breakout
-    #define SD_SCK_PIN      19  // D8
-    #define SD_MISO_PIN     20  // D9
-    #define SD_MOSI_PIN     21  // D10
-    #define SD_CS_PIN       18  // D7 (Chip Select)
+    #define SD_SCK_PIN      19  // D8 (SCK)
+    #define SD_MISO_PIN     20  // D9 (MISO)
+    #define SD_MOSI_PIN     18  // D10 (MOSI)
+    #define SD_CS_PIN       2   // D2 (CS - Chip Select)
 
     // Optional Battery Voltage Divider (ADC)
     // Solder a 100k/100k voltage divider to monitor 3.7V LiPo battery
@@ -31,11 +31,6 @@
 
     // Status Indicator LED
     #define STATUS_LED_PIN  15  // D6 / GPIO15
-
-    // Optional Battery Sensing (if using battery pads)
-    #define BATTERY_ADC_PIN 0   // D0 / GPIO0
-    #define BATTERY_R1      100000.0f
-    #define BATTERY_R2      100000.0f
 
 #elif defined(BOARD_XIAO_ESP32S3)
     #define SD_SCK_PIN      7   // D8

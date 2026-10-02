@@ -1,6 +1,7 @@
 # ⚡ XiaoVault Survival Wiki
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![1-Click Web Flasher](https://img.shields.io/badge/Web_Flasher-1--Click_Install-brightgreen.svg)](https://everyday3d.github.io/xiaovault-survival-wiki/)
 [![PlatformIO](https://img.shields.io/badge/PlatformIO-ESP32--C6-orange.svg)](https://platformio.org/)
 [![Hardware: Seeed Studio XIAO](https://img.shields.io/badge/Hardware-Seeed_XIAO_ESP32--C6-brightgreen.svg)](https://www.seeedstudio.com/Seeed-Studio-XIAO-ESP32C6-p-5884.html)
 [![3D Case: 100% Zero Support](https://img.shields.io/badge/3D_Print-Zero_Supports-blue.svg)](models/)
@@ -97,11 +98,20 @@ Connecting to the `XiaoVault Survival Wiki` WiFi hotspot automatically triggers 
 
 ## 🚀 Quick Start Guide
 
-### 1. Build and Flash the Firmware
+### 1. Flash the Firmware
 
-This project uses [PlatformIO](https://platformio.org/). You can also use the Arduino IDE.
+#### ⚡ Option A: 1-Click Browser Web Flasher (Zero Software Installation!)
+You don't need PlatformIO, Python, or Arduino IDE installed. Plug your **Seeed Studio XIAO ESP32-C6** into your computer via USB-C and flash directly from Chrome, Edge, or Brave:
 
-#### Option A: Using PlatformIO (Recommended)
+👉 **[Launch XiaoVault 1-Click Web Flasher](https://everyday3d.github.io/xiaovault-survival-wiki/)**
+
+1. Connect your Xiao via USB-C data cable.
+2. Click **⚡ Connect & Flash XiaoVault**.
+3. Pick your Xiao COM port from the browser prompt. Flashing and verification take ~25 seconds!
+
+---
+
+#### Option B: Using PlatformIO (For Developers)
 ```bash
 # Clone the repository
 git clone https://github.com/everyday3d/xiaovault-survival-wiki.git
@@ -114,7 +124,7 @@ pio run -e seeed_xiao_esp32c6 -t upload
 pio device monitor -b 115200
 ```
 
-#### Option B: Using Arduino IDE
+#### Option C: Using Arduino IDE
 1. Install the **ESP32** board package in the Arduino Boards Manager.
 2. Select Board: **ESP32C6 Dev Module** (or Seeed Studio XIAO ESP32C6).
 3. Install the **ArduinoJson** library (v7.x) via Library Manager.
@@ -159,14 +169,14 @@ pio device monitor -b 115200
 
 Connect your MicroSD SPI card breakout to the Seeed Studio XIAO ESP32-C6 as follows:
 
-| XIAO Pin Label | ESP32-C6 GPIO | MicroSD Module Pin | Description |
-| :--- | :--- | :--- | :--- |
-| **3V3** | 3.3V Power | **VCC** | 3.3V Power Supply |
-| **GND** | Ground | **GND** | Ground |
-| **D8** | `GPIO 19` | **SCK / CLK** | SPI Clock |
-| **D9** | `GPIO 20` | **MISO / DO** | SPI Data Out |
-| **D10** | `GPIO 21` | **MOSI / DI** | SPI Data In |
-| **D7** | `GPIO 18` | **CS** | Chip Select |
+| XIAO Pin Label | ESP32-C6 GPIO | MicroSD Module Pin | Description | Wire Color (Typical) |
+| :--- | :--- | :--- | :--- | :--- |
+| **3V3** | 3.3V Power | **VCC** | 3.3V Power Supply | Red |
+| **GND** | Ground | **GND** | Ground | Black |
+| **D8** | `GPIO 19` | **SCK / CLK** | SPI Clock | Yellow |
+| **D9** | `GPIO 20` | **MISO / DO** | SPI Data Out | Green |
+| **D10** | `GPIO 18` | **MOSI / DI** | SPI Data In | Blue |
+| **D2** | `GPIO 2` | **CS** | Chip Select | White |
 
 For detailed battery and voltage divider wiring, see [`docs/WIRING.md`](docs/WIRING.md).
 

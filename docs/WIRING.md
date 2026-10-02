@@ -17,8 +17,8 @@ A standard MicroSD card breakout board requires only 6 wires (Power, Ground, and
 |                     GND  |==================| GND                    |
 |   D8  (GPIO 19)     SCK  |------------------| SCK / CLK              |
 |   D9  (GPIO 20)     MISO |------------------| MISO / DO (Data Out)   |
-|   D10 (GPIO 21)     MOSI |------------------| MOSI / DI (Data In)    |
-|   D7  (GPIO 18)     CS   |------------------| CS (Chip Select)       |
+|   D10 (GPIO 18)     MOSI |------------------| MOSI / DI (Data In)    |
+|   D2  (GPIO 2)      CS   |------------------| CS (Chip Select)       |
 +--------------------------+                  +------------------------+
 ```
 
@@ -30,8 +30,8 @@ A standard MicroSD card breakout board requires only 6 wires (Power, Ground, and
 | **GND** | Ground | **GND** | Ground |
 | **D8** | `GPIO 19` | **SCK / CLK** | SPI Serial Clock |
 | **D9** | `GPIO 20` | **MISO / DO** | SPI Master In / Slave Out |
-| **D10** | `GPIO 21` | **MOSI / DI** | SPI Master Out / Slave In |
-| **D7** | `GPIO 18` | **CS** | Chip Select (Active LOW) |
+| **D10** | `GPIO 18` | **MOSI / DI** | SPI Master Out / Slave In |
+| **D2** | `GPIO 2` | **CS** | Chip Select (Active LOW) |
 
 > ⚠️ **Important Note on 5V vs 3.3V SD Modules**:
 > Ensure your MicroSD card breakout does not have an aggressive 5V-to-3.3V regulator that causes brownouts on 3.3V input. Direct 3.3V MicroSD breakout adapters (or ribbon adapters) are strongly recommended.

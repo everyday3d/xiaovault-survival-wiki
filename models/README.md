@@ -57,7 +57,7 @@ This model is engineered for **100% Zero-Support FDM Printing**. Both parts are 
    * `D8` ➔ `SCK` (Clock)
    * `D9` ➔ `MISO` (Master In, Slave Out)
    * `D10` ➔ `MOSI` (Master Out, Slave In)
-   * `D3` ➔ `CS` (Chip Select)
+   * `D2` ➔ `CS` (Chip Select)
 3. **Route Harness:** Dress the 6 wires through the central divider channel ($10.0\text{ mm} \times 2.4\text{ mm}$).
 4. **Close Lid:** Align the Lid with the Base (USB notch forward, SD slot rearward, lanyard tab matching). Press the lid firmly until all 8 detents click into place.
 5. **Insert MicroSD:** Push your formatted MicroSD card into the rear ejection slot until it clicks into the push-push socket. To remove, simply push in slightly until it springs back out.
