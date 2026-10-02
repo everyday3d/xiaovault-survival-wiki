@@ -32,29 +32,42 @@
     // Status Indicator LED
     #define STATUS_LED_PIN  15  // D6 / GPIO15
 
+    // Optional Battery Sensing (if using battery pads)
+    #define BATTERY_ADC_PIN 0   // D0 / GPIO0
+    #define BATTERY_R1      100000.0f
+    #define BATTERY_R2      100000.0f
+
 #elif defined(BOARD_XIAO_ESP32S3)
     #define SD_SCK_PIN      7   // D8
     #define SD_MISO_PIN     8   // D9
     #define SD_MOSI_PIN     9   // D10
     #define SD_CS_PIN       4   // D7
-    #define BATTERY_ADC_PIN 1   // D0
+    #define STATUS_LED_PIN  21
+    #define BATTERY_ADC_PIN 1
     #define BATTERY_R1      100000.0f
     #define BATTERY_R2      100000.0f
-    #define USER_BTN_PIN    0   // BOOT
-    #define STATUS_LED_PIN  21
+    #define USER_BTN_PIN    0
 
 #else
-    // Generic ESP32 WROOM default SPI pins
     #define SD_SCK_PIN      18
     #define SD_MISO_PIN     19
     #define SD_MOSI_PIN     23
     #define SD_CS_PIN       5
+    #define STATUS_LED_PIN  2
     #define BATTERY_ADC_PIN 34
     #define BATTERY_R1      100000.0f
     #define BATTERY_R2      100000.0f
     #define USER_BTN_PIN    0
-    #define STATUS_LED_PIN  2
 #endif
+
+// -----------------------------------------------------------------------------
+// 2. POWER BANK & USB POWER MANAGEMENT
+// -----------------------------------------------------------------------------
+// Many smart USB power banks auto-shutoff if a device draws under 50mA.
+// Setting POWERBANK_KEEP_ALIVE to true emits periodic 200ms radio/LED pulses
+// every 15 seconds to prevent smart power banks from going to sleep.
+#define POWERBANK_KEEP_ALIVE        true
+#define POWERBANK_PULSE_INTERVAL_MS 15000 // Every 15 seconds
 
 // -----------------------------------------------------------------------------
 // 2. OFFLINE WIFI ACCESS POINT SETTINGS

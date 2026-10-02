@@ -8,13 +8,13 @@ This project is designed to be affordable, modular, and easy to assemble using r
 
 | Component | Description | Approx. Price | Example Source |
 | :--- | :--- | :--- | :--- |
-| **Microcontroller** | **Seeed Studio XIAO ESP32-C6** (WiFi 6, BLE 5, RISC-V, LiPo charge pads) | ~$5.20 | [Amazon](https://www.amazon.com/dp/B0D2NKVB34) / [Seeed Studio](https://www.seeedstudio.com/Seeed-Studio-XIAO-ESP32C6-p-5884.html) |
+| **Microcontroller** | **Seeed Studio XIAO ESP32-C6** (WiFi 6, BLE 5, RISC-V) | ~$5.20 | [Amazon](https://www.amazon.com/dp/B0D2NKVB34) / [Seeed Studio](https://www.seeedstudio.com/Seeed-Studio-XIAO-ESP32C6-p-5884.html) |
 | **MicroSD Module** | 3.3V MicroSD Card SPI Breakout Board or MicroSD Ribbon adapter | ~$1.50 | [Amazon](https://www.amazon.com/s?k=microsd+spi+breakout+3.3v) / AliExpress |
 | **Storage Card** | 32GB or 64GB MicroSD Card (Class 10 / U1, formatted FAT32) | ~$5.00–$7.00 | SanDisk, Samsung, or Kingston |
-| **Rechargeable Battery** *(Optional)* | 3.7V 400mAh–600mAh Flat LiPo Cell (e.g. 502535 / 602535 size) | ~$4.00 | Amazon / AliExpress |
+| **Power Source** | **Any Standard Portable Phone Charger / USB Power Bank** (5,000–10,000mAh) | ~$10.00 (or one you already own) | Anker, INIU, Mi, or solar power banks |
 | **Enclosure** | 3D Printed **XiaoVault C6** Snap-Fit Case (100% Zero-Support STL) | ~$0.30 in filament | [STL in repository](../models/) or MakerWorld |
 
-**Total Estimated Hardware Cost**: **$12 – $18**
+**Total Estimated Hardware Cost**: **$12 – $18** *(Assuming you already own a phone charger!)*
 
 ---
 

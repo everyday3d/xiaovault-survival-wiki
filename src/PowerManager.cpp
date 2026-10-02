@@ -63,6 +63,18 @@ void PowerManager::notifyActivity() {
 }
 
 void PowerManager::loop() {
+    // 1. Smart Power Bank Keep-Alive
+    // Many power banks turn off if current draw is under 50mA.
+    // Emit a periodic high-draw pulse to keep the power bank active.
+    #if defined(POWERBANK_KEEP_ALIVE) && POWERBANK_KEEP_ALIVE
+    if (millis() - _lastKeepAliveMs > POWERBANK_PULSE_INTERVAL_MS) {
+        _lastKeepAliveMs = millis();
+        // Briefly activate status LED at full brightness
+        digitalWrite(STATUS_LED_PIN, HIGH);
+        delayMicroseconds(500);
+    }
+    #endif
+
     if (AUTO_SLEEP_TIMEOUT_SEC <= 0) return;
 
     // Check if any clients are connected

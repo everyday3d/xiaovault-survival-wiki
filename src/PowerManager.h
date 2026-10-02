@@ -18,5 +18,6 @@ private:
     PowerManager();
     unsigned long _lastActivityMs;
     unsigned long _lastBatteryCheckMs;
+    unsigned long _lastKeepAliveMs;
     float _cachedVoltage;
 };

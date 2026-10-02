@@ -38,9 +38,31 @@ A standard MicroSD card breakout board requires only 6 wires (Power, Ground, and
 
 ---
 
-## 🔋 Optional 3.7V Rechargeable LiPo Battery
+## 🔋 Power Method 1: Portable Phone Charger / USB Power Bank (Recommended — Zero Soldering!)
 
-The **Seeed Studio XIAO ESP32-C6** features an integrated **onboard Lithium Battery Charge Management chip** (charging current $\approx 100\text{ mA}$) with solder pads on the bottom of the board:
+The easiest, safest, and most practical way to power the XiaoVault Survival Wiki is with any **standard portable USB phone charger (power bank)**:
+
+```
++---------------------------+       USB-C Cable       +----------------------------+
+| Portable USB Power Bank   |========================>| XiaoVault C6 Case          |
+| (5,000mAh – 20,000mAh)    |                         | (Seeed XIAO ESP32-C6)      |
++---------------------------+                         +----------------------------+
+```
+
+### Why a USB Phone Charger is Ideal:
+* **Zero Soldering Required**: Just plug a standard USB-C cable directly into the USB-C cutout on the 3D-printed XiaoVault case.
+* **Massive Multi-Day Runtime**:
+  * A compact **5,000 mAh** bank powers the micro-server for **$\approx 45–50\text{ hours}$** of continuous reading.
+  * A standard **10,000 mAh** bank runs it for **$\approx 90–100\text{ hours}$** (over 4 full days nonstop!).
+  * If left idle with auto-sleep enabled, it can remain on standby for **weeks**.
+* **Smart Power Bank Keep-Alive**: The firmware includes an active keep-alive pulse (`POWERBANK_KEEP_ALIVE`) that prevents smart power banks from turning off due to low current draw.
+* **Universal Charging**: Recharge your power bank from a car adapter, solar panel, generator, or hand-crank charger in an emergency.
+
+---
+
+## 🔋 Power Method 2: Optional Soldered 3.7V LiPo Battery
+
+If you want an ultra-slim, self-contained keychain unit without an external cable, you can solder a small 3.7V LiPo battery directly to the bottom pads of the XIAO ESP32-C6:
 
 ```
 [ BOTTOM SIDE OF XIAO ESP32-C6 ]

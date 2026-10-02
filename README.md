@@ -24,7 +24,7 @@ This repository includes the complete 3D printable **XiaoVault C6** zero-support
 * 📡 **Offline WiFi Hotspot & Instant Captive Portal**: The ESP32-C6 broadcasts its own standalone WiFi access point (`XiaoVault Survival Wiki`). When any phone connects, the browser automatically launches the search engine and reader. **Zero apps, zero cell towers, zero internet required.**
 * ⚡ **High-Speed Micro-Wiki Binary Search**: Custom binary index algorithm searches through hundreds of thousands of articles on a MicroSD card in **less than 15 milliseconds** over SPI.
 * 🚨 **Fail-Safe Flash Emergency Guides**: Even if your MicroSD card is lost, removed, or corrupted, life-saving emergency cheat sheets (Adult CPR, Tourniquet Application, Water Purification, Rule of Threes, and Morse Code) boot instantly directly from microcontroller flash memory (`PROGMEM`).
-* 🔋 **LiPo Battery Aware**: Monitored via ADC with real-time battery voltage and percentage reported on the web UI, plus an automatic deep-sleep power-saving timer when idle.
+* 🔋 **Powered by Portable Phone Chargers (Zero Soldering!)**: Plug any standard USB-C power bank directly into the case. A compact 10,000mAh power bank provides **4+ days (90–100 hours)** of continuous, nonstop offline access. Includes smart keep-alive pulses to prevent power banks from auto-shutting off.
 * 📱 **Ultra-Lightweight Dark-Mode Web App**: High-contrast, battery-saving dark interface (<15 KB) with instant search autocomplete, category filtering, and offline bookmarks saved to the phone's local storage.
 * 🖨️ **100% Zero-Support Snap Enclosure**: Includes precision snap-fit CAD models with dual GPIO pin slots and an integrated 4.0 mm keyring fail-safe lock.
 
@@ -147,7 +147,7 @@ For detailed battery and voltage divider wiring, see [`docs/WIRING.md`](docs/WIR
 * **Microcontroller**: [Seeed Studio XIAO ESP32-C6](https://www.amazon.com/dp/B0D2NKVB34) (~$5.20)
 * **Storage**: 32GB or 64GB MicroSD Card (~$6.00)
 * **SD Breakout**: 3.3V MicroSD Card SPI Module (~$1.50)
-* **Battery** *(Optional)*: 3.7V 500mAh LiPo Cell (~$4.00)
+* **Power Source**: Any Standard **Portable Phone Charger / USB Power Bank** (5,000–10,000mAh) or solar charger
 * **Case**: 3D Printed **XiaoVault C6** Snap Enclosure (Included in [`models/`](models/))
 
 See [`docs/HARDWARE.md`](docs/HARDWARE.md) for full component links.
