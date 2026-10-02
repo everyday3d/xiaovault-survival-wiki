@@ -1,0 +1,137 @@
+name: Build Firmware & Deploy Web Flasher
+
+on:
+  push:
+    branches: ["main"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Compile Firmware & Prepare Web Flasher
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install PlatformIO & esptool
+        run: |
+          python -m pip install --upgrade pip
+          pip install platformio esptool
+
+      - name: Cache PlatformIO packages
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.platformio
+            .pio
+          key: ${{ runner.os }}-platformio-${{ hashFiles('**/platformio.ini') }}
+          restore-keys: |
+            ${{ runner.os }}-platformio-
+
+      - name: Build Firmware for XIAO ESP32-C6 (Primary)
+        run: |
+          pio run -e seeed_xiao_esp32c6
+
+      - name: Build Firmware for XIAO ESP32-S3
+        run: |
+          pio run -e seeed_xiao_esp32s3
+
+      - name: Assemble Web Flasher Bundle & Merge Binaries
+        run: |
+          mkdir -p dist/firmware
+
+          # Copy Web Flasher Frontend
+          cp installer/index.html dist/index.html
+          cp installer/manifest.json dist/manifest.json
+
+          # Copy C6 Discrete Binaries
+          cp .pio/build/seeed_xiao_esp32c6/bootloader.bin dist/firmware/bootloader_c6.bin
+          cp .pio/build/seeed_xiao_esp32c6/partitions.bin dist/firmware/partitions_c6.bin
+          cp .pio/build/seeed_xiao_esp32c6/firmware.bin dist/firmware/firmware_c6.bin
+
+          # Check for boot_app0 in framework
+          BOOT_APP0=$(find ~/.platformio/packages/framework-arduinoespressif32 -name "boot_app0.bin" 2>/dev/null | head -n 1 || true)
+
+          # Merge ESP32-C6 single binary at 0x0
+          if [ -n "$BOOT_APP0" ] && [ -f "$BOOT_APP0" ]; then
+            echo "Merging ESP32-C6 binary with boot_app0 at $BOOT_APP0"
+            esptool.py --chip esp32c6 merge_bin -o dist/firmware/xiaovault_c6_merged.bin \
+              --flash_mode dio --flash_freq 80m --flash_size 4MB \
+              0x0 .pio/build/seeed_xiao_esp32c6/bootloader.bin \
+              0x8000 .pio/build/seeed_xiao_esp32c6/partitions.bin \
+              0xe000 "$BOOT_APP0" \
+              0x10000 .pio/build/seeed_xiao_esp32c6/firmware.bin
+          else
+            echo "Merging ESP32-C6 binary without boot_app0"
+            esptool.py --chip esp32c6 merge_bin -o dist/firmware/xiaovault_c6_merged.bin \
+              --flash_mode dio --flash_freq 80m --flash_size 4MB \
+              0x0 .pio/build/seeed_xiao_esp32c6/bootloader.bin \
+              0x8000 .pio/build/seeed_xiao_esp32c6/partitions.bin \
+              0x10000 .pio/build/seeed_xiao_esp32c6/firmware.bin
+          fi
+
+          # Copy S3 Discrete Binaries
+          cp .pio/build/seeed_xiao_esp32s3/bootloader.bin dist/firmware/bootloader_s3.bin
+          cp .pio/build/seeed_xiao_esp32s3/partitions.bin dist/firmware/partitions_s3.bin
+          cp .pio/build/seeed_xiao_esp32s3/firmware.bin dist/firmware/firmware_s3.bin
+
+          # Merge ESP32-S3 single binary at 0x0
+          if [ -n "$BOOT_APP0" ] && [ -f "$BOOT_APP0" ]; then
+            echo "Merging ESP32-S3 binary with boot_app0 at $BOOT_APP0"
+            esptool.py --chip esp32s3 merge_bin -o dist/firmware/xiaovault_s3_merged.bin \
+              --flash_mode qio --flash_freq 80m --flash_size 8MB \
+              0x0 .pio/build/seeed_xiao_esp32s3/bootloader.bin \
+              0x8000 .pio/build/seeed_xiao_esp32s3/partitions.bin \
+              0xe000 "$BOOT_APP0" \
+              0x10000 .pio/build/seeed_xiao_esp32s3/firmware.bin
+          else
+            echo "Merging ESP32-S3 binary without boot_app0"
+            esptool.py --chip esp32s3 merge_bin -o dist/firmware/xiaovault_s3_merged.bin \
+              --flash_mode qio --flash_freq 80m --flash_size 8MB \
+              0x0 .pio/build/seeed_xiao_esp32s3/bootloader.bin \
+              0x8000 .pio/build/seeed_xiao_esp32s3/partitions.bin \
+              0x10000 .pio/build/seeed_xiao_esp32s3/firmware.bin
+          fi
+
+          echo "Dist files generated:"
+          ls -la dist/
+          ls -la dist/firmware/
+
+      - name: Upload Standalone Firmware Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: xiaovault-firmware-binaries
+          path: dist/firmware/
+
+      - name: Upload Pages Artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist/
+
+  deploy:
+    name: Deploy to GitHub Pages
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
