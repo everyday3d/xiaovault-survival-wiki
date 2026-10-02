@@ -25,6 +25,29 @@ This repository includes the complete 3D printable **XiaoVault C6 Tandem Edition
 - **100% Zero-Support FDM Printability**: Pre-oriented flat on print bed with 0 downward-facing steep overhangs.
 - **Integrated 4.0 mm Paracord / Keyring Loop**: Heavy-duty lanyard loop on the rear corner.
 
+---
+
+## 📱 Web Interface & Offline Mobile Experience
+
+Connecting to the `XiaoVault Survival Wiki` WiFi hotspot automatically triggers your smartphone's native captive portal, launching a lightweight, zero-dependency dark-mode web application directly in your browser. **No apps, no internet connection, and no accounts required.**
+
+<div align="center">
+
+| 🔍 Search & Category Hub | 📖 Emergency Article Reader |
+| :---: | :---: |
+| <img src="docs/images/ui_hub.png" width="340" alt="XiaoVault Search & Hub View"> | <img src="docs/images/ui_article.png" width="340" alt="XiaoVault Article Reader View"> |
+
+</div>
+
+### Interface Highlights:
+- **⚡ Sub-15ms Binary Search**: Instant article filtering over the MicroSD index as you type across hundreds of thousands of survival articles and Wikipedia entries.
+- **🚨 Fail-Safe Flash Triage**: Essential life-saving protocols (CPR, Tourniquets, Water Purification, Rule of Threes) boot directly from microcontroller flash memory (`PROGMEM`) even if the MicroSD card is removed.
+- **🔋 Live Hardware Telemetry**: The bottom status dock monitors real-time USB-C power bank input voltage, MicroSD storage capacity, connected reader count, and device uptime.
+- **⭐ Local Phone Bookmarks**: Save critical guides directly to your phone's browser cache for offline reference even if you step away from the device.
+- **🖤 Battery-Optimized OLED Dark Theme**: Ultra-lean payload (<15 KB total) designed for maximum battery conservation and high-contrast sunlight readability.
+
+---
+
 ## 🌟 Key Features
 
 * 📡 **Offline WiFi Hotspot & Instant Captive Portal**: The ESP32-C6 broadcasts its own standalone WiFi access point (`XiaoVault Survival Wiki`). When any phone connects, the browser automatically launches the search engine and reader. **Zero apps, zero cell towers, zero internet required.**
