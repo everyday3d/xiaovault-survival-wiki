@@ -10,6 +10,28 @@
 
 When cellular towers, power grids, and internet access go down during emergencies, natural disasters, or remote off-grid expeditions, **XiaoVault Survival Wiki** provides instant, portable access to medical guides, survival manuals, and the entirety of human knowledge right on your smartphone or laptop.
 
+**When the grid goes down, the answers don't have to.** No internet. No cell service. No subscription. Plug it into a power bank and open the Wi-Fi list on your phone.
+
+## What you get
+
+| | |
+| :--- | :--- |
+| 📖 **118 field guides** | Water, fire, shelter, first aid, weather, vehicles, home, radio, kids and family, hygiene and more, in 15 categories. Plain language, written for stressed people with cold hands. The same library as the [ESP32 CYD Survival Wiki](https://github.com/everyday3d/esp32-cyd-survival-wiki). |
+| 🔎 **Search that knows keywords** | Type "cpr", "tick" or "burn" and get the right guide. Search matches titles and keywords, every word has to match, and title matches come first. |
+| 🗂️ **Category tiles** | The home page shows a tile per category with a guide count. Tap one to see its guides. |
+| 🔗 **Linked guides and pictures** | Guides point to related guides ("see Shock"), and 22 line drawings show knots, shelters, CPR and more. |
+| 🚨 **Works with no SD card** | CPR, severe bleeding, water purification, the Rule of Threes and Morse code live in the board's own flash memory. |
+| 📱 **Phone hotspot** | The board makes its own Wi-Fi network and a captive portal opens the reader. Nothing to install. Bookmarks stay on the phone. |
+| 🔋 **Days on a power bank** | A 10,000 mAh bank runs it for days, with a keep-alive pulse so smart banks don't switch off. |
+| 🖨️ **Printable case** | Zero-support snap-fit Tandem case with a rear microSD slot. STEP and FreeCAD files included. |
+
+**Flash it from your browser in one click:** [everyday3d.github.io/xiaovault-survival-wiki](https://everyday3d.github.io/xiaovault-survival-wiki/)
+
+Runs on the **Seeed Studio XIAO ESP32-C6** with a microSD breakout on a normal FAT32 card. See the [changelog](CHANGELOG.md) for what's new.
+
+> [!NOTE]
+> **New in 1.1.0 (not tested on real hardware yet):** the 118-guide library, category tiles, keyword search, linked guides and pictures. **Rebuild your microSD card** (see below): the index format changed, and an old card falls back to the flash guides until you do.
+
 ---
 
 ## 📸 3D Printable Snap-Fit Case (XiaoVault C6 Tandem Edition)
@@ -88,9 +110,9 @@ Connecting to the `XiaoVault Survival Wiki` WiFi hotspot automatically triggers 
                                          ▼
                  +-----------------------------------------------+
                  |  FAT32 / exFAT MicroSD Card (32GB – 128GB)    |
-                 |  - /wiki/wiki.idx (High-speed binary index)   |
-                 |  - /wiki/wiki.dat (Compressed article bodies) |
-                 |  - /guides/       (Raw Markdown & HTML files) |
+                 |  - /wiki/wiki.idx (binary index, v2)          |
+                 |  - /wiki/wiki.dat (article bodies as HTML)    |
+                 |  - /wiki/search.tsv, categories.tsv, img/     |
                  +-----------------------------------------------+
 ```
 
@@ -135,17 +157,33 @@ pio device monitor -b 115200
 ### 2. Prepare Your MicroSD Card
 
 1. Format a MicroSD card (32GB or 64GB) as **FAT32** or **exFAT**.
-2. Run the included Python tool to compile your survival guides or Wikipedia dumps into the high-speed index:
+2. **Quickest way:** copy the ready-made [`sd_card/wiki/`](sd_card/wiki/) folder from this repo onto the card. It holds all 118 guides.
+   **To change or add guides:** edit the Markdown files in [`guides/`](guides/) and rebuild with the Python tool (Python 3, no extra packages):
    ```bash
-   cd tools
-   python build_wiki_sd.py --create-samples
+   python tools/build_wiki_sd.py                              # guides/ -> sd_card/wiki/
+   python tools/build_wiki_sd.py --input my_guides --output E:/wiki   # your own folder, straight to the card
    ```
-3. Copy the generated `wiki` folder directly onto the root of your MicroSD card:
+   A guide is a Markdown file that starts with a few lines of front matter:
+   ```text
+   ---
+   title: Burns
+   category: firstaid
+   tags: burns, scald, blisters
+   summary: Cool the burn, cover it, and know when it is serious.
+   ---
+   ## Cool it
+   - Cool with clean, cool running water for **20 minutes**.
+   ```
+   `category` is an id from [`guides/categories.tsv`](guides/categories.tsv). Titles must be unique (and are cut at 56 bytes).
+3. The card should end up like this:
    ```text
    MicroSD Card Root (D:\)
    └── wiki/
-       ├── wiki.idx   (Binary Search Index)
-       └── wiki.dat   (Article Content Data)
+       ├── wiki.idx        (binary index, format v2)
+       ├── wiki.dat        (guide text as HTML)
+       ├── search.tsv      (keywords for search)
+       ├── categories.tsv  (home screen tiles)
+       └── img/            (pictures used by the guides)
    ```
 4. Insert the card into your MicroSD breakout board attached to the XIAO.
 

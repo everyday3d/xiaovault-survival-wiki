@@ -43,6 +43,32 @@ void handleSearchApi() {
     server.send(200, "application/json", jsonRes);
 }
 
+void handleCategoriesApi() {
+    PowerManager::instance().notifyActivity();
+    server.send(200, "application/json", WikiEngine::instance().categoriesJson());
+}
+
+void handleCategoryApi() {
+    PowerManager::instance().notifyActivity();
+    int n = server.arg("n").toInt();
+    if (n < 0 || n > 254) {
+        server.send(400, "text/plain", "Bad category");
+        return;
+    }
+    server.send(200, "application/json", WikiEngine::instance().categoryJson((uint8_t)n));
+}
+
+static const char* mimeFor(const String& path) {
+    if (path.endsWith(".html") || path.endsWith(".htm")) return "text/html";
+    if (path.endsWith(".jpg") || path.endsWith(".jpeg")) return "image/jpeg";
+    if (path.endsWith(".png")) return "image/png";
+    if (path.endsWith(".gif")) return "image/gif";
+    if (path.endsWith(".svg")) return "image/svg+xml";
+    if (path.endsWith(".pdf")) return "application/pdf";
+    if (path.endsWith(".json")) return "application/json";
+    return "text/plain";
+}
+
 void handleWikiArticle() {
     PowerManager::instance().notifyActivity();
     String id = server.arg("id");
@@ -136,9 +162,12 @@ void handleNotFound() {
     String uri = server.uri();
     if (StorageEngine::instance().fileExists(uri)) {
         File f = StorageEngine::instance().openFile(uri, "r");
-        server.streamFile(f, "text/plain");
-        f.close();
-        return;
+        if (f) {
+            server.sendHeader("Cache-Control", "max-age=86400");
+            server.streamFile(f, mimeFor(uri));
+            f.close();
+            return;
+        }
     }
 
     server.send(404, "text/plain", "404 Not Found");
@@ -170,6 +199,8 @@ void setup() {
     server.on("/", HTTP_GET, handleRoot);
     server.on("/api/emergency", HTTP_GET, handleEmergencyApi);
     server.on("/api/search", HTTP_GET, handleSearchApi);
+    server.on("/api/categories", HTTP_GET, handleCategoriesApi);
+    server.on("/api/category", HTTP_GET, handleCategoryApi);
     server.on("/wiki", HTTP_GET, handleWikiArticle);
     server.on("/browse", HTTP_GET, handleBrowse);
     server.on("/view", HTTP_GET, handleViewFile);

@@ -6,7 +6,7 @@
 // =============================================================================
 
 #define APP_NAME            "XiaoVault Survival Wiki"
-#define APP_VERSION         "1.0.0"
+#define APP_VERSION         "1.1.0"
 #define APP_TAGLINE         "Offline Emergency Knowledge Base & Wikipedia Micro-Server"
 
 // -----------------------------------------------------------------------------
@@ -92,8 +92,16 @@
 #define GUIDES_DIR          "/guides"
 #define EMERGENCY_DIR       "/emergency"
 
-// Micro-Wiki binary index entry size
-// [4 bytes hash][28 bytes title (null-padded)][8 bytes offset][4 bytes length] = 44 bytes
+#define WIKI_CATEGORIES_FILE "/wiki/categories.tsv"
+#define WIKI_SEARCH_FILE    "/wiki/search.tsv"
+
+// Micro-Wiki binary index, format v2 (written by tools/build_wiki_sd.py)
+//   header 16 bytes: [magic u32]["WIKI"][count u32][version u32][reserved u32]
+//   entry  68 bytes: [title 56, UTF-8, null padded][offset u32][length u32][category u8][3 pad]
 #define MWIKI_MAGIC         0x57494B49 // "WIKI"
-#define MWIKI_ENTRY_SIZE    44
-#define MWIKI_TITLE_MAX_LEN 28
+#define MWIKI_VERSION       2
+#define MWIKI_HEADER_SIZE   16
+#define MWIKI_ENTRY_SIZE    68
+#define MWIKI_TITLE_MAX_LEN 56
+// Wikis up to this many articles also get keyword search and category counts.
+#define MWIKI_SMALL_WIKI_LIMIT 4000

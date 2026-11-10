@@ -192,6 +192,10 @@ header {
   font-family: monospace;
 }
 .article-view pre { padding: 12px; overflow-x: auto; margin-bottom: 12px; }
+.article-view img { max-width: 100%; height: auto; border-radius: 6px; margin: 4px 0 12px 0; display: block; }
+.article-view blockquote { border-left: 3px solid var(--accent); padding: 6px 12px; margin: 0 0 12px 0; color: var(--text-bright); background: #1c2128; border-radius: 0 6px 6px 0; }
+.article-view a.xl { color: var(--accent); text-decoration: underline; cursor: pointer; }
+.cat-count { font-size: 0.7rem; color: #8b949e; font-weight: 500; }
 .btn {
   background: var(--border);
   color: var(--text-bright);
@@ -236,7 +240,7 @@ header {
       <input type="text" id="searchInput" class="search-input" placeholder="Search offline Wikipedia & guides..." autocomplete="off">
     </div>
 
-    <div class="categories">
+    <div class="categories" id="catGrid">
       <div class="cat-btn" onclick="filterCategory('First Aid')">
         <span class="cat-icon">🩺</span>
         <span>First Aid</span>
@@ -322,7 +326,7 @@ function renderGuides(guides) {
     return;
   }
   container.innerHTML = guides.map(g => `
-    <a href="#" class="guide-item" onclick="openGuide('${g.id}', event)">
+    <a href="#" class="guide-item" data-id="${encodeURIComponent(g.id)}" onclick="openGuide(decodeURIComponent(this.dataset.id), event)">
       <span>${g.icon || '📄'} ${g.title}</span>
       <span style="font-size:0.75rem; color:#8b949e;">${g.category || 'Guide'} →</span>
     </a>
@@ -398,6 +402,40 @@ function showHome(e) {
   renderGuides(cachedGuides);
 }
 
+// Category tiles come from the SD card (categories.tsv). With no card, the
+// built-in tiles above stay as they are.
+async function loadCategories() {
+  try {
+    const res = await fetch('/api/categories');
+    const cats = await res.json();
+    if (!cats || cats.length === 0) return;
+    const grid = document.getElementById('catGrid');
+    grid.innerHTML = cats.map(c => `
+      <div class="cat-btn" style="border-top:3px solid ${c.color || 'var(--border)'}" onclick="openCategory(${c.n}, decodeURIComponent('${encodeURIComponent(c.name)}'))">
+        <span>${c.name.replace(/&/g, '&amp;').replace(/</g, '&lt;')}</span>
+        <span class="cat-count">${c.count} guides</span>
+      </div>`).join('') + '<div class="cat-btn" onclick="browseSD()"><span>Browse SD</span></div>';
+  } catch (e) {}
+}
+
+async function openCategory(n, name) {
+  document.getElementById('cardTitle').innerText = name;
+  document.getElementById('guidesList').innerHTML = '<p style="color:#8b949e; padding:10px 0;">Loading...</p>';
+  try {
+    const res = await fetch(`/api/category?n=${n}`);
+    renderGuides(await res.json());
+  } catch (e) {
+    renderGuides([]);
+  }
+  window.scrollTo(0, 0);
+}
+
+// Links between guides carry the target title in data-id.
+document.addEventListener('click', (e) => {
+  const link = e.target.closest && e.target.closest('a.xl');
+  if (link) openGuide('sd_' + link.dataset.id, e);
+});
+
 function filterCategory(cat) {
   document.getElementById('cardTitle').innerText = `Category: ${cat}`;
   const filtered = cachedGuides.filter(g => g.category === cat);
@@ -441,6 +479,7 @@ function browseSD() {
 }
 
 loadInitialData();
+loadCategories();
 </script>
 </body>
 </html>

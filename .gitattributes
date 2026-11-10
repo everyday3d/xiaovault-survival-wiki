@@ -1,0 +1,14 @@
+# Keep binary files byte-for-byte. Without this, git on Windows can mistake a binary
+# for text and rewrite its line endings on checkout, which corrupts it.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.bin binary
+*.idx binary
+*.dat binary
+*.stl binary
+*.step binary
+*.FCStd binary
+
+# The SD card text files are read byte-for-byte by the firmware: always LF.
+*.tsv text eol=lf

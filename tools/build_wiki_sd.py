@@ -1,172 +1,271 @@
 #!/usr/bin/env python3
 """
-XiaoVault Survival Wiki — Micro-Wiki SD Card Builder
-Converts a directory of Markdown / HTML files or text articles into a high-speed
-binary-indexed file format (`wiki.idx` and `wiki.dat`) optimized for ESP32 microcontrollers.
+XiaoVault Survival Wiki - SD card builder (index format v2)
 
-Index Format:
-Header (8 bytes):
-  - [4 bytes] Magic: 0x57494B49 ("WIKI")
-  - [4 bytes] Total Entry Count (uint32_t)
+Turns a folder of guides (Markdown with simple front matter, or plain
+Markdown / HTML / text files) into the files the firmware reads from the
+microSD card:
 
-Per Entry (44 bytes, sorted alphabetically by title):
-  - [4 bytes]  FNV-1a Hash of title (uint32_t)
-  - [28 bytes] Title string (ASCII, null-padded)
-  - [8 bytes]  Data file offset (uint64_t)
-  - [4 bytes]  Article byte length (uint32_t)
+  wiki/wiki.idx        binary index, sorted by title (case-insensitive)
+  wiki/wiki.dat        article bodies as ready-to-show HTML
+  wiki/categories.tsv  category list for the home screen (copied through)
+  wiki/search.tsv      one line per article, "title<TAB>tags<TAB>summary",
+                       in index order, so search also matches keywords
+  wiki/img/            images used by the guides (copied through)
+
+Index v2 layout (little endian)
+  Header, 16 bytes:  magic "WIKI" 0x57494B49 | count u32 | version u32 (=2) | reserved u32
+  Entry,  68 bytes:  title[56] UTF-8, null padded
+                     offset u32 | length u32 | category u8 | reserved[3]
+
+Guide front matter (same format as the ESP32 CYD Survival Wiki):
+
+  ---
+  title: Burns
+  category: firstaid          (an id from categories.tsv)
+  tags: burns, scald, blisters
+  summary: Cool the burn, cover it, and know when it is serious.
+  ---
 
 Usage:
-  python build_wiki_sd.py --input ./sample_articles --output ./sd_card_root/wiki
+  python tools/build_wiki_sd.py                       # guides/ -> sd_card/wiki/
+  python tools/build_wiki_sd.py --input my_guides --output E:/wiki
 """
 
-import os
-import sys
-import struct
 import argparse
+import html
+import re
+import shutil
+import struct
+import sys
 from pathlib import Path
 
-# Ensure UTF-8 output on Windows consoles
-if hasattr(sys.stdout, 'reconfigure'):
-    sys.stdout.reconfigure(encoding='utf-8')
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8")
 
-MWIKI_MAGIC = 0x57494B49 # "WIKI"
-ENTRY_SIZE = 44
-TITLE_MAX_LEN = 28
+MAGIC = 0x57494B49  # "WIKI"
+VERSION = 2
+HEADER_SIZE = 16
+ENTRY_SIZE = 68
+TITLE_BYTES = 56
+NO_CATEGORY = 255
 
-def fnv1a_32(text: str) -> int:
-    h = 2166136261
-    for byte in text.lower().encode('utf-8', errors='ignore'):
-        h ^= byte
-        h = (h * 16777619) & 0xFFFFFFFF
-    return h
 
-def build_wiki(input_dir: Path, output_dir: Path):
+def parse_front_matter(text):
+    """Split '--- key: value ---' front matter from the body."""
+    meta = {}
+    if text.startswith("---"):
+        end = text.find("\n---", 3)
+        if end != -1:
+            for line in text[3:end].splitlines():
+                if ":" in line:
+                    key, _, value = line.partition(":")
+                    meta[key.strip().lower()] = value.strip()
+            body = text[end + 4:].lstrip("\r\n")
+            return meta, body
+    return meta, text
+
+
+def inline(text, link_map):
+    """Inline markdown: escape, bold, italic, images, links."""
+    text = html.escape(text, quote=False)
+
+    def image(m):
+        alt, src = m.group(1), m.group(2)
+        src = src.replace("img/", "/wiki/img/", 1) if src.startswith("img/") else src
+        return f'<img src="{src}" alt="{alt}" loading="lazy">'
+
+    text = re.sub(r"!\[([^\]]*)\]\(([^)]+)\)", image, text)
+
+    def link(m):
+        label, target = m.group(1), m.group(2)
+        if target.endswith(".md"):
+            title = link_map.get(Path(target).stem)
+            if title:
+                return f'<a class="xl" data-id="{html.escape(title)}">{label}</a>'
+            return label
+        if target.startswith(("http://", "https://")):
+            return label  # no internet in the field, keep the words only
+        return label
+
+    text = re.sub(r"(?<!!)\[([^\]]+)\]\(([^)]+)\)", link, text)
+    text = re.sub(r"\*\*(.+?)\*\*", r"<strong>\1</strong>", text)
+    text = re.sub(r"(?<![\*\w])\*([^\*\s][^\*]*?)\*(?![\*\w])", r"<em>\1</em>", text)
+    return text
+
+
+def render(body, link_map):
+    """Small markdown subset renderer: ## headings, lists, quotes, paragraphs."""
+    out = []
+    para = []
+    list_kind = None
+    quote = []
+
+    def flush_para():
+        nonlocal para
+        if para:
+            out.append("<p>" + "<br>".join(inline(p, link_map) for p in para) + "</p>")
+            para = []
+
+    def flush_list():
+        nonlocal list_kind
+        if list_kind:
+            out.append(f"</{list_kind}>")
+            list_kind = None
+
+    def flush_quote():
+        nonlocal quote
+        if quote:
+            out.append('<blockquote>' + "<br>".join(inline(q, link_map) for q in quote) + "</blockquote>")
+            quote = []
+
+    for raw in body.splitlines():
+        line = raw.rstrip()
+        stripped = line.strip()
+        if not stripped:
+            flush_para(); flush_list(); flush_quote()
+            continue
+        if stripped.startswith("> ") or stripped == ">":
+            flush_para(); flush_list()
+            quote.append(stripped[1:].strip())
+            continue
+        flush_quote()
+        m = re.match(r"^(#{1,4})\s+(.*)", stripped)
+        if m:
+            flush_para(); flush_list()
+            out.append(f"<h4>{inline(m.group(2), link_map)}</h4>")
+            continue
+        m = re.match(r"^[-*]\s+(.*)", stripped)
+        if m:
+            flush_para()
+            if list_kind != "ul":
+                flush_list(); out.append("<ul>"); list_kind = "ul"
+            out.append(f"<li>{inline(m.group(1), link_map)}</li>")
+            continue
+        m = re.match(r"^\d+[.)]\s+(.*)", stripped)
+        if m:
+            flush_para()
+            if list_kind != "ol":
+                flush_list(); out.append("<ol>"); list_kind = "ol"
+            out.append(f"<li>{inline(m.group(1), link_map)}</li>")
+            continue
+        flush_list()
+        para.append(stripped)
+    flush_para(); flush_list(); flush_quote()
+    return "\n".join(out)
+
+
+def load_categories(path):
+    ids, names = [], {}
+    if path.exists():
+        for line in path.read_text(encoding="utf-8").splitlines():
+            if line and not line.startswith("#"):
+                cols = line.split("\t")
+                ids.append(cols[0])
+                names[cols[0]] = cols[1] if len(cols) > 1 else cols[0]
+    return ids, names
+
+
+def clip_title(title):
+    raw = title.encode("utf-8")
+    if len(raw) <= TITLE_BYTES:
+        return raw
+    return raw[:TITLE_BYTES].decode("utf-8", errors="ignore").encode("utf-8")
+
+
+def build(input_dir, output_dir):
     output_dir.mkdir(parents=True, exist_ok=True)
-    idx_path = output_dir / "wiki.idx"
-    dat_path = output_dir / "wiki.dat"
+    cat_ids, cat_names = load_categories(input_dir / "categories.tsv")
 
-    print(f"📖 Scanning articles in: {input_dir}")
+    files = sorted(p for p in input_dir.rglob("*")
+                   if p.is_file() and p.suffix.lower() in (".md", ".html", ".htm", ".txt")
+                   and "img" not in p.relative_to(input_dir).parts)
+
+    # First pass: titles, so guide-to-guide links can be resolved.
+    parsed = []
+    link_map = {}
+    for path in files:
+        text = path.read_text(encoding="utf-8", errors="replace")
+        meta, body = parse_front_matter(text) if path.suffix.lower() == ".md" else ({}, text)
+        title = meta.get("title") or path.stem.replace("_", " ").replace("-", " ").title()
+        parsed.append([path, meta, body, title])
+
+    # Titles must be unique: add the category name to any that repeat.
+    counts = {}
+    for p in parsed:
+        counts[p[3].lower()] = counts.get(p[3].lower(), 0) + 1
+    for p in parsed:
+        if counts[p[3].lower()] > 1:
+            p[3] = f"{p[3]} ({cat_names.get(p[1].get('category', ''), 'other')})"
+        link_map[p[0].stem] = p[3]
+
     articles = []
+    seen = set()
+    for path, meta, body, title in parsed:
+        key = title.lower()
+        if key in seen:
+            print(f"! duplicate title skipped: {title}")
+            continue
+        seen.add(key)
+        if path.suffix.lower() == ".md":
+            html_body = render(body, link_map)
+        elif path.suffix.lower() == ".txt":
+            html_body = "<pre style='white-space:pre-wrap'>" + html.escape(body) + "</pre>"
+        else:
+            html_body = body
+        category = meta.get("category", "")
+        cat = cat_ids.index(category) if category in cat_ids else NO_CATEGORY
+        if category and category not in cat_ids:
+            print(f"! {path.name}: unknown category '{category}'")
+        articles.append({
+            "title": title,
+            "title_bytes": clip_title(title),
+            "html": html_body.encode("utf-8"),
+            "cat": cat,
+            "tags": meta.get("tags", ""),
+            "summary": meta.get("summary", ""),
+        })
 
-    for file_path in input_dir.rglob("*"):
-        if file_path.is_file() and file_path.suffix.lower() in [".md", ".html", ".htm", ".txt"]:
-            title = file_path.stem.replace("_", " ").replace("-", " ").title()
-            try:
-                with open(file_path, "r", encoding="utf-8", errors="replace") as f:
-                    content = f.read()
-                
-                # Wrap markdown in simple HTML if needed
-                if file_path.suffix.lower() == ".md":
-                    html_content = f"<div><pre style='white-space: pre-wrap; font-family: sans-serif;'>{content}</pre></div>"
-                else:
-                    html_content = content
+    # Sorted by title: this is what makes the firmware's binary search work.
+    # The firmware lowercases ASCII only and compares bytes, so sort the same way.
+    def sort_key(a):
+        return bytes(b + 32 if 65 <= b <= 90 else b for b in a["title_bytes"])
+    articles.sort(key=sort_key)
 
-                content_bytes = html_content.encode("utf-8")
-                articles.append({
-                    "title": title[:TITLE_MAX_LEN],
-                    "hash": fnv1a_32(title[:TITLE_MAX_LEN]),
-                    "bytes": content_bytes
-                })
-            except Exception as e:
-                print(f"⚠️ Error reading {file_path}: {e}")
+    dat = bytearray()
+    idx = bytearray(struct.pack("<IIII", MAGIC, len(articles), VERSION, 0))
+    search_lines = []
+    for a in articles:
+        offset, length = len(dat), len(a["html"])
+        dat += a["html"]
+        idx += struct.pack("<56sIIB3x", a["title_bytes"], offset, length, a["cat"])
+        search_lines.append("\t".join(
+            s.replace("\t", " ").replace("\n", " ") for s in (a["title"], a["tags"], a["summary"])))
 
-    # Sort articles alphabetically by title (CRITICAL for Binary Search on ESP32!)
-    articles.sort(key=lambda a: a["title"].lower())
-    total_count = len(articles)
-    print(f"✅ Found and sorted {total_count} articles.")
+    (output_dir / "wiki.idx").write_bytes(idx)
+    (output_dir / "wiki.dat").write_bytes(dat)
+    (output_dir / "search.tsv").write_text("\n".join(search_lines) + "\n", encoding="utf-8", newline="\n")
 
-    print(f"💾 Writing {dat_path} and {idx_path}...")
-    with open(dat_path, "wb") as f_dat, open(idx_path, "wb") as f_idx:
-        # Write index header (8 bytes): magic + count
-        f_idx.write(struct.pack("<II", MWIKI_MAGIC, total_count))
+    cat_src = input_dir / "categories.tsv"
+    if cat_src.exists():
+        shutil.copyfile(cat_src, output_dir / "categories.tsv")
+    img_src = input_dir / "img"
+    if img_src.is_dir():
+        shutil.copytree(img_src, output_dir / "img", dirs_exist_ok=True)
 
-        current_offset = 0
-        for art in articles:
-            length = len(art["bytes"])
-            f_dat.write(art["bytes"])
+    print(f"Indexed {len(articles)} articles")
+    print(f"  wiki.dat   {len(dat) / 1024:.1f} KB")
+    print(f"  wiki.idx   {len(idx) / 1024:.1f} KB")
+    print(f"Copy the '{output_dir.name}' folder to the root of your FAT32/exFAT microSD card.")
 
-            # Format title as 28-byte null-padded ASCII
-            title_bytes = art["title"].encode("ascii", errors="replace")[:TITLE_MAX_LEN]
-            title_padded = title_bytes.ljust(TITLE_MAX_LEN, b"\x00")
-
-            # Entry (44 bytes): [hash: 4][title: 28][offset: 8][length: 4]
-            entry = struct.pack("<I28sQI", art["hash"], title_padded, current_offset, length)
-            f_idx.write(entry)
-
-            current_offset += length
-
-    print(f"🎉 Build Complete!")
-    print(f"   Indexed: {total_count} articles")
-    print(f"   Data Size:  {current_offset / 1024:.1f} KB")
-    print(f"   Index Size: {os.path.getsize(idx_path) / 1024:.1f} KB")
-    print(f"👉 Copy the '{output_dir.name}' folder onto the root of your FAT32 MicroSD card!")
-
-def create_sample_pack(sample_dir: Path):
-    sample_dir.mkdir(parents=True, exist_ok=True)
-    samples = {
-        "Edible_Wild_Plants.md": """# Edible Wild Plants Guide
-## Universal Edibility Test (Extreme Emergencies Only)
-1. Separate plant into parts (roots, stems, leaves, flowers).
-2. Test one part at a time.
-3. Crush and smell: Discard if smelling like bitter almonds (cyanide).
-4. Skin contact test: Rub on wrist/elbow for 15 minutes. Wait 8 hours for rash.
-5. Lip contact test: Touch to outer lip for 3 minutes.
-6. Tongue test: Place on tongue for 15 minutes without chewing/swallowing.
-7. Small bite: Chew small portion and hold 15 minutes.
-8. Wait 8 hours. If no nausea, cramping, or diarrhea, plant part is generally safe.
-
-## Reliable Common Edibles (North America & Europe)
-- Dandelion: 100% edible (leaves, flowers, roots roasted for tea).
-- Cattails: "Supermarket of the swamp". White stem core, pollen, root starch.
-- Plantain (Plantago major): Young leaves raw or boiled; crushed leaves soothe bee stings.
-- Pine Needles: Rich in Vitamin C (brew as tea; avoid Ponderosa pine).
-""",
-        "Ham_Radio_Frequencies.md": """# Emergency Radio Frequencies
-## National Calling Frequencies (VHF / UHF)
-- 146.520 MHz (2 Meter National FM Simplex Calling)
-- 446.000 MHz (70 Centimeter National FM Simplex Calling)
-- 52.525 MHz (6 Meter FM Calling)
-
-## Marine VHF Emergency
-- Channel 16 (156.800 MHz): International Maritime Distress & Hailing.
-
-## CB Radio (Citizens Band)
-- Channel 9 (27.065 MHz): Emergency & Roadside Assistance.
-- Channel 19 (27.185 MHz): Highway & Trucker information.
-
-## NOAA Weather Radio Frequencies
-- WX1: 162.550 MHz | WX2: 162.400 MHz | WX3: 162.475 MHz
-- WX4: 162.425 MHz | WX5: 162.450 MHz | WX6: 162.500 MHz | WX7: 162.525 MHz
-""",
-        "Essential_Knots.md": """# Essential Survival Knots
-1. Bowline (King of Knots): Creates a fixed, secure loop that never slips or jams under heavy tension. Essential for rescue harnesses.
-2. Square Knot (Reef Knot): Quick binding knot for tying two ropes of equal diameter together (bandages, bundles).
-3. Taut-Line Hitch: Adjustable friction hitch for tightening tent guylines and tarp ridges.
-4. Clove Hitch: Quickly secures a rope to a post, tree, or ridge pole.
-5. Figure-Eight on a Bight: Reliable stopper knot and climbing anchor loop.
-"""
-    }
-
-    for name, text in samples.items():
-        with open(sample_dir / name, "w", encoding="utf-8") as f:
-            f.write(text.strip())
-
-    print(f"📦 Created sample survival guides in: {sample_dir}")
 
 def main():
-    parser = argparse.ArgumentParser(description="Build indexed offline wiki for XiaoVault ESP32")
-    parser.add_argument("--input", default="sample_articles", help="Input directory of markdown/html articles")
-    parser.add_argument("--output", default="sd_card/wiki", help="Output directory for wiki.idx and wiki.dat")
-    parser.add_argument("--create-samples", action="store_true", help="Generate sample survival articles")
-    args = parser.parse_args()
+    ap = argparse.ArgumentParser(description="Build the XiaoVault wiki files for the SD card")
+    ap.add_argument("--input", default="guides", help="folder of guides (default: guides)")
+    ap.add_argument("--output", default="sd_card/wiki", help="output folder (default: sd_card/wiki)")
+    args = ap.parse_args()
+    build(Path(args.input), Path(args.output))
 
-    input_p = Path(args.input)
-    output_p = Path(args.output)
-
-    if args.create_samples or not input_p.exists():
-        create_sample_pack(input_p)
-
-    build_wiki(input_p, output_p)
 
 if __name__ == "__main__":
     main()
