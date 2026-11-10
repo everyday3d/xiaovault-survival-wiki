@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [1.1.0] - 2026-11-10
+## [1.5.0] - 2026-11-10
 
 The guide library from the [ESP32 CYD Survival Wiki](https://github.com/everyday3d/esp32-cyd-survival-wiki)
 comes to the XIAO ESP32-C6. Tested on a real board.
@@ -33,7 +33,7 @@ comes to the XIAO ESP32-C6. Tested on a real board.
   guides still work) and the serial log says why.
 - Search returns several matches instead of one. The old prefix search could miss a guide.
 - Files from the SD card are served with the right content type (pictures were sent as plain text).
-- Version 1.1.0.
+- Version 1.5.0.
 
 ### Removed
 - `sample_articles/` and `--create-samples`. The three sample articles are replaced by the full library.

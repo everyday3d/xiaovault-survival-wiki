@@ -6,7 +6,7 @@
 // =============================================================================
 
 #define APP_NAME            "XiaoVault Survival Wiki"
-#define APP_VERSION         "1.1.0"
+#define APP_VERSION         "1.5.0"
 #define APP_TAGLINE         "Offline Emergency Knowledge Base & Wikipedia Micro-Server"
 
 // -----------------------------------------------------------------------------
