@@ -7,10 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [1.1.0] - Unreleased
+## [1.1.0] - 2026-11-10
 
 The guide library from the [ESP32 CYD Survival Wiki](https://github.com/everyday3d/esp32-cyd-survival-wiki)
-comes to the XIAO ESP32-C6. Not tested on real hardware yet.
+comes to the XIAO ESP32-C6. Tested on a real board.
 
 ### Added
 - **118 field guides on the SD card**, in 15 categories: First Steps, Water, Fire, Shelter, First Aid,

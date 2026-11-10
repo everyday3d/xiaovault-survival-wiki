@@ -30,7 +30,7 @@ When cellular towers, power grids, and internet access go down during emergencie
 Runs on the **Seeed Studio XIAO ESP32-C6** with a microSD breakout on a normal FAT32 card. See the [changelog](CHANGELOG.md) for what's new.
 
 > [!NOTE]
-> **New in 1.1.0 (not tested on real hardware yet):** the 118-guide library, category tiles, keyword search, linked guides and pictures. **Rebuild your microSD card** (see below): the index format changed, and an old card falls back to the flash guides until you do.
+> **New in 1.1.0:** the 118-guide library, category tiles, keyword search, linked guides and pictures. **Rebuild your microSD card** (see below): the index format changed, and an old card falls back to the flash guides until you do.
 
 ---
 
